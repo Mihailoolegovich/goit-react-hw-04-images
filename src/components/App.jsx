@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import apiService from './services/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,7 +16,8 @@ export default function App() {
 
   const [totalHits, setTotalHits] = useState(null);
   const [perPage, setPerPage] = useState(0);
-  const [pageNum, setPageNum] = useState(1);
+
+  const [pageNum, setPageNum] = useReducer(incrementPageNum, 1);
 
   const [openModal, setOpenModal] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -67,8 +68,15 @@ export default function App() {
     }
   }, [totalHits, dataImage, perPage, searchName]);
 
-  function incrementPageNum() {
-    setPageNum(pageNum + 1);
+  function incrementPageNum(state, action) {
+    switch (action.type) {
+      case 'increment':
+        return state + action.payload;
+      case 'reset':
+        return action.payload;
+      default:
+        return state;
+    }
   }
 
   function toggleModal() {
@@ -88,8 +96,8 @@ export default function App() {
   function resetState() {
     setTotalHits([]);
     setDataImage([]);
-    setPerPage(0);
-    setPageNum(1);
+    setPerPage(1);
+    setPageNum({ type: 'reset', payload: 1 });
   }
 
   return (
@@ -107,7 +115,7 @@ export default function App() {
       )}
       {loader && <Loader />}
       {totalHits > 0 && totalHits > perPage ? (
-        <Button onClick={incrementPageNum} />
+        <Button onClick={() => setPageNum({ type: 'increment', payload: 1 })} />
       ) : null}
       <ToastContainer autoClose={3000} />
     </div>
